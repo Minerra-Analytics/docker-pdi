@@ -3,16 +3,37 @@ Docker Pentaho Data Integration
 
 # Introduction
 
-DockerFile for [Pentaho Data Integration](https://sourceforge.net/projects/pentaho/) (a.k.a kettel / PDI)
+DockerFile for [Pentaho Data Integration](https://sourceforge.net/projects/pentaho/) (a.k.a kettle / PDI)
 
-This image is intendend to allow execution os PDI transformations and jobs throught command line and run PDI's UI (`Spoon`). PDI server (`Carter`) is available on this image.
+This image is intendend to allow execution of PDI transformations and jobs through command line and run PDI's UI (`Spoon`).   
+PDI server (`Carte`) is also available on this image.
+
+# Docker Build Arguments
+```
+ARG GIT_USER
+ARG GIT_PASS
+ARG GIT_ORG
+ARG GIT_REPO
+```
+
+```
+docker build \
+  --build-arg "GIT_USER=user" \
+  --build-arg "GIT_PASS=password" \
+  --build-arg "GIT_ORG=my_org" \
+  --build-arg "GIT_REPO=this_repo" \
+  -t hermantansg/pdi .
+```
+
+This will place the files from the repo into `/jobs` folder in the container.
+
 
 # Quick start
 
 ## Basic Syntax
 
 ```
-$ docker container run --rm andrespp/pdi
+$ docker container run --rm hermantansg/pdi:latest
 
 Usage:	/entrypoint.sh COMMAND
 
@@ -26,16 +47,20 @@ Options:
 
 ```
 
+The files in `/jobs` folder must be cloned from a repo before hand.
+
+
 ## Running Transformations
 
+
 ```
-$ docker container run --rm -v $(pwd):/jobs andrespp/pdi runt sample/dummy.ktr
+$ docker container run --rm -v $(pwd):/jobs hermantansg/pdi runt sample/dummy.ktr
 ```
 
 ## Running Jobs
 
 ```
-$ docker container run --rm -v $(pwd):/jobs andrespp/pdi runj  sample/dummy.kjb
+$ docker container run --rm -v $(pwd):/jobs hermantansg/pdi runj  sample/dummy.kjb
 ```
 
 ## Running Spoon (UI)
@@ -47,25 +72,8 @@ $ docker run -it --rm -v /tmp/.X11-unix/:/tmp/.X11-unix/:ro \
         -v $(pwd):/jobs \
         -e XAUTH=$(xauth list|grep `uname -n` | cut -d ' ' -f5) -e "DISPLAY" \
         --name spoon \
-        andrespp/pdi spoon
+        hermantansg/pdi spoon
 ```
-
-### Using startup script (Installing)
-
-In order to run the container as if the application was installed locally, download the `spoon` script to a directory in you $PATH, for example:
-
-```bash
-$ sudo curl -fsSL https://raw.githubusercontent.com/andrespp/docker-pdi/master/spoon \
-       -o /usr/local/bin/spoon
-$ sudo chmod +x /usr/local/bin/spoon
-```
-
-Then you'll be able to run JupyterLab in the current directory simply by calling `jlab`:
-
-```bash
-$ spoon
-```
-
 
 ## Custom `kettle.properties`
 
@@ -73,20 +81,26 @@ In order to use a custom `kettle.properties`, you need to leave the file availab
 
 ```bash
 $ # Custom properties in $(pwd)/kettle.properties
-$ docker container run --rm -v $(pwd):/jobs andrespp/pdi runj  sample/dummy.kjb
+$ docker container run --rm -v $(pwd):/jobs hermantansg/pdi runj  sample/dummy.kjb
 ```
 
 # Environment variables
 
 This image uses several environment variables in order to control its behavior, and some of them may be required
 
-| Environment variable | Default value | Note |
-| -------------------- | ------------- | -----|
-| PDI\_VERSION | 7.1 | |
-| |  | |
+```
+ENV PDI_VERSION=9.2 
+ENV PDI_BUILD=9.2.0.0-290 
+```
 
-# Issues
+## Database Drivers
 
-If you have any problems with or questions about this image, please contact me
-through a [GitHub issue](https://github.com/andrespp/docker-pdi/issues).
+* Mariadb 
+* Postgres
+
+```
+ENV	MARIADB_JDBC_VERSION=2.3.0
+ENV POSTGRES_JDBC_VERSION=42.2.5
+```
+
 
